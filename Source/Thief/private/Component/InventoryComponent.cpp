@@ -17,6 +17,18 @@ UInventoryComponent::UInventoryComponent()
 	// ...
 }
 
+// Called when the game starts
+void UInventoryComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	//나중에 저장 데이터에서 인벤토리 가져오는 코드 구현 예정
+	
+
+	InventoryContents.Init(FItemSlot(), SlotsCapacity);
+	// ...
+	
+}
+
 FItemSlot* UInventoryComponent::FindSlotByID(FName ItemID)
 {
 	for (FItemSlot& Slot : InventoryContents)
@@ -56,8 +68,6 @@ UItemBase* UInventoryComponent::FindMatchingItem(UItemBase* Item) const
 {
 	if (Item)
 	{
-		//인벤토리에 있는 아이템과 같은 아이템이면 그대로 반환
-		//if(InventoryContents.Contains(Item)) return Item;
 		for (FItemSlot Slot : InventoryContents)
 		{
 			if (Slot.Item)
@@ -143,6 +153,8 @@ int32 UInventoryComponent::RemoveAmountOfItem(UItemBase* Item, int32 DesiredRemo
 	//아이템 개수에서 실제 삭제 개수 빼기
 	Item->SetAmount(Item->Amount - ActualAmountToRemove);
 	//무게에서 삭제된 만큼 빼기
+	CurrentWeight -= ActualAmountToRemove * Item->GetItemSingleWeight();
+	//값어치에서 삭제된 만큼 빼기
 	CurrentWeight -= ActualAmountToRemove * Item->GetItemSingleWeight();
 	//그 사실을 널리 알리기
 	OnInventoryUpdated.Broadcast();
@@ -259,6 +271,8 @@ int32 UInventoryComponent::HandleStackableItem(UItemBase* AddedItem, int32 Reque
 			ExistingItemStack->SetAmount(ExistingItemStack->Amount + WeightLimitAddAmount);
 			//개수 추가한 만큼 인벤토리 무게 추가
 			CurrentWeight += ExistingItemStack->GetItemSingleWeight() * WeightLimitAddAmount;
+			//값어치 추가
+			CurrentWeight += ExistingItemStack->GetItemValue() * WeightLimitAddAmount;
 
 			//넣을 양에서 넣은 양 빼기
 			AmountToDistribute -= WeightLimitAddAmount;
@@ -389,22 +403,11 @@ void UInventoryComponent::AddNewItem(UItemBase* Item, const int32 Amount)
 	
 	//무게 추가
 	CurrentWeight += NewItem->GetItemStackWeight();
+	//값어치 추가
+	CurrentValue += NewItem->GetItemValue();
 	//그 사실을 널리 알리기
 	OnInventoryUpdated.Broadcast();
 }
-
-// Called when the game starts
-void UInventoryComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	//나중에 저장 데이터에서 인벤토리 가져오는 코드 구현 예정
-	
-
-	InventoryContents.Init(FItemSlot(), SlotsCapacity);
-	// ...
-	
-}
-
 
 FItemSlot* UInventoryComponent::FindEmptySlot()
 {

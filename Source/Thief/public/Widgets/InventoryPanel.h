@@ -31,6 +31,9 @@ public:
 	class UProgressBar* WeightBar;
 
 	UPROPERTY(meta=(BindWidget))
+	UTextBlock* ValueInfo;
+	
+	UPROPERTY(meta=(BindWidget))
 	UTextBlock* WeightInfo;
 	
 	UPROPERTY()
@@ -45,6 +48,8 @@ protected:
 	void SetInfoText() const;
 
 	virtual void NativeOnInitialized() override;
+
+	virtual void NativeConstruct() override;
 
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 

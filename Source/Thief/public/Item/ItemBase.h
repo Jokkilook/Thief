@@ -45,6 +45,9 @@ public:
 	//아이템 무게 반환
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	FORCEINLINE float GetItemSingleWeight() const { return NumericData.Weight; };
+	//아이템 값어치 반환
+	UFUNCTION(BlueprintCallable, Category = "Item")
+	FORCEINLINE float GetItemValue() const { return NumericData.Value; };
 	//최대 수량인지 체크
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	FORCEINLINE bool IsFullStack() const { return Amount == NumericData.MaxAmount; };

@@ -30,7 +30,7 @@ AThiefPlayer::AThiefPlayer()
 	
 	//인벤토리 초기화
 	InventoryComponent->SetSlotsCapacity(10);
-	InventoryComponent->SetWeightCapacity(100);
+	InventoryComponent->SetWeightCapacity(6);
 
 	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 }
@@ -220,7 +220,7 @@ void AThiefPlayer::NotFoundInteractable()
 void AThiefPlayer::Look(const FInputActionValue& Value)
 {
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-	UE_LOG(LogTemp, Warning, TEXT("LOOK X: %f, Y: %f"), LookAxisVector.X, LookAxisVector.Y);
+	//UE_LOG(LogTemp, Warning, TEXT("LOOK X: %f, Y: %f"), LookAxisVector.X, LookAxisVector.Y);
 	float sen = 1;
 
 	if (Controller != nullptr)
@@ -233,7 +233,7 @@ void AThiefPlayer::Look(const FInputActionValue& Value)
 void AThiefPlayer::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
-	UE_LOG(LogTemp, Warning, TEXT("MOVE X: %f, Y: %f"), MovementVector.X, MovementVector.Y);
+	//UE_LOG(LogTemp, Warning, TEXT("MOVE X: %f, Y: %f"), MovementVector.X, MovementVector.Y);
 
 	if (Controller != nullptr)
 	{

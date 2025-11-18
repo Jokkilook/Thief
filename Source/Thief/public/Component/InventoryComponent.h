@@ -173,6 +173,9 @@ public:
 	//인벤토리 슬롯 반환
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FORCEINLINE TArray<FItemSlot> GetInventory() const { return InventoryContents; };
+	//인벤토리 총 값어치 반환
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	FORCEINLINE float GetCurrentValue() const { return CurrentValue; };
 
 	//인벤토리 슬롯 용량 설정
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -200,6 +203,10 @@ protected:
 	//현재 인벤토리 무게
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
 	float CurrentWeight;
+
+	//현재 값어치
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	float CurrentValue;
 
 	//인벤토리 슬롯
 	UPROPERTY(EditAnywhere, Category = "Inventory")

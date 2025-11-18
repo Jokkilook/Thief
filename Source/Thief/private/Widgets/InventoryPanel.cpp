@@ -17,15 +17,26 @@ void UInventoryPanel::NativeOnInitialized()
 	PlayerRef = Cast<AThiefPlayer>(GetOwningPlayerPawn());
 	if (PlayerRef)
 	{
-		InventoryRef = PlayerRef->InventoryComponent;
+		InventoryRef = PlayerRef->FindComponentByClass<UInventoryComponent>();
 		
 		if (InventoryRef)
 		{
 			InventoryRef->OnInventoryUpdated.AddUObject(this, &UInventoryPanel::RefreshInventory);
 			SetInfoText();
 			UE_LOG(LogTemp, Warning, TEXT("RefreshInventory Registered"));
+		} else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No InventoryRef"));
 		}
+	} else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No PlayerRef"));
 	}
+}
+
+void UInventoryPanel::NativeConstruct()
+{
+	Super::NativeConstruct();
 }
 
 void UInventoryPanel::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -43,8 +54,13 @@ void UInventoryPanel::SetInfoText() const
 	//용량 ( ex) 2/100 ) 텍스트 업데이트
 	const FString WeightInfoText =
 		{FString::SanitizeFloat(InventoryRef->GetCurrentWeight())+"/"+
-		 FString::FromInt(InventoryRef->GetWeightCapacity())};
+		 FString::FromInt(InventoryRef->GetWeightCapacity())+"kg"};
 	WeightInfo->SetText(FText::FromString(WeightInfoText));
+
+	FText ValueText = FText::Format(
+	FText::FromString(TEXT("{0} $")),
+	FText::AsNumber(InventoryRef->GetCurrentValue()));
+	ValueInfo->SetText(ValueText);
 }
 
 void UInventoryPanel::RefreshInventory()
