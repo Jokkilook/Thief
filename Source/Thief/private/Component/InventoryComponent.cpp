@@ -68,7 +68,7 @@ UItemBase* UInventoryComponent::FindMatchingItem(UItemBase* Item) const
 {
 	if (Item)
 	{
-		for (FItemSlot Slot : InventoryContents)
+		for (const FItemSlot& Slot : InventoryContents)
 		{
 			if (Slot.Item)
 			{
@@ -155,7 +155,7 @@ int32 UInventoryComponent::RemoveAmountOfItem(UItemBase* Item, int32 DesiredRemo
 	//무게에서 삭제된 만큼 빼기
 	CurrentWeight -= ActualAmountToRemove * Item->GetItemSingleWeight();
 	//값어치에서 삭제된 만큼 빼기
-	CurrentWeight -= ActualAmountToRemove * Item->GetItemSingleWeight();
+	CurrentValue -= ActualAmountToRemove * Item->GetItemValue();
 	//그 사실을 널리 알리기
 	OnInventoryUpdated.Broadcast();
 	//실제 삭제된 개수 반환
@@ -272,7 +272,7 @@ int32 UInventoryComponent::HandleStackableItem(UItemBase* AddedItem, int32 Reque
 			//개수 추가한 만큼 인벤토리 무게 추가
 			CurrentWeight += ExistingItemStack->GetItemSingleWeight() * WeightLimitAddAmount;
 			//값어치 추가
-			CurrentWeight += ExistingItemStack->GetItemValue() * WeightLimitAddAmount;
+			CurrentValue += ExistingItemStack->GetItemValue() * WeightLimitAddAmount;
 
 			//넣을 양에서 넣은 양 빼기
 			AmountToDistribute -= WeightLimitAddAmount;

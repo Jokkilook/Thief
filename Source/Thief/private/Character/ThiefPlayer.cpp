@@ -357,6 +357,12 @@ void AThiefPlayer::Interaction()
 
 void AThiefPlayer::DropItem(class UItemBase* ItemToDrop, const int32 AmountToDrop, bool IsWhole)
 {
+	if (!InventoryComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NO INVENTORY COMP"));
+		return;
+	}
+	
 	if (InventoryComponent->FindMatchingItem(ItemToDrop))
 	{
 		FActorSpawnParameters SpawnParams;
