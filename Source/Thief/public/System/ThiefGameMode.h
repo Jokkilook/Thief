@@ -25,7 +25,7 @@ public:
 	FGameOver OnGameOver;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	ACharacter* PlayerRef;
+	class AThiefPlayer* PlayerRef;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class ASpawnVolume* SpawnBox;
@@ -39,6 +39,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 ItemMax = 100;
 
+	UPROPERTY(EditDefaultsOnly)
+	float MaxValue;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TArray<FItemData> Items;
 
@@ -51,16 +54,17 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	FTimerHandle GameTimerHandle;
 
-	
-	
-	UFUNCTION(Blueprintable)
-	float AssessPlayer(ACharacter* Player);
+	UFUNCTION(BlueprintCallable)
+	float AssessPlayer(AThiefPlayer* Player);
 
 	UFUNCTION()
 	UItemBase* CreateItemByID(FName ItemID, int32 Amount);
 
 	UFUNCTION(BlueprintCallable)
 	FVector GetRandomLocation();
+
+	UFUNCTION()
+	float SolveKnapsack(float WeightCapacity);
 
 	UFUNCTION(BlueprintCallable)
 	void SetItems();
