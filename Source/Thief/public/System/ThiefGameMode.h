@@ -10,6 +10,7 @@
 /**
  * 
  */
+
 UCLASS()
 class THIEF_API AThiefGameMode : public AGameModeBase
 {
@@ -20,7 +21,7 @@ public:
 	AThiefGameMode();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ACharacter* PlayerRef;
+	class AThiefPlayer* PlayerRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class ASpawnVolume* SpawnBox;
@@ -34,10 +35,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 ItemMax = 100;
 
+	UPROPERTY(EditDefaultsOnly)
+	float MaxValue;
+
 	TArray<FItemData> Items;
 	
-	UFUNCTION(Blueprintable)
-	float AssessPlayer(ACharacter* Player);
+	UFUNCTION(BlueprintCallable)
+	float AssessPlayer(AThiefPlayer* Player);
 
 	UFUNCTION()
 	UItemBase* CreateItemByID(FName ItemID, int32 Amount);
@@ -47,6 +51,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetItems();
+
+	UFUNCTION()
+	float SolveKnapsack(float WeightCapacity);
 
 protected:
 	virtual void BeginPlay() override;

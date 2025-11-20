@@ -30,7 +30,7 @@ AThiefPlayer::AThiefPlayer()
 	
 	//인벤토리 초기화
 	InventoryComponent->SetSlotsCapacity(10);
-	InventoryComponent->SetWeightCapacity(6);
+	InventoryComponent->SetWeightCapacity(2);
 
 	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 }
