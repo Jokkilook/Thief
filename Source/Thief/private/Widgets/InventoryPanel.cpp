@@ -52,9 +52,14 @@ void UInventoryPanel::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 void UInventoryPanel::SetInfoText() const
 {
 	//용량 ( ex) 2/100 ) 텍스트 업데이트
-	const FString WeightInfoText =
+	/*const FString WeightInfoText =
 		{FString::SanitizeFloat(InventoryRef->GetCurrentWeight())+"/"+
-		 FString::FromInt(InventoryRef->GetWeightCapacity())+"kg"};
+		 FString::FromInt(InventoryRef->GetWeightCapacity())+"kg"};*/
+
+	const FString WeightInfoText = FString::Printf(TEXT("%.1f/%dkg"),
+	InventoryRef->GetCurrentWeight(),
+	(int)InventoryRef->GetWeightCapacity());
+
 	WeightInfo->SetText(FText::FromString(WeightInfoText));
 
 	FText ValueText = FText::Format(

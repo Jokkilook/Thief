@@ -3,9 +3,11 @@
 
 #include "System/ThiefGameMode.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Item/Pickup.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Widgets/MainHUD.h"
 #include "System/SpawnVolume.h"
 
 AThiefGameMode::AThiefGameMode()
@@ -28,6 +30,9 @@ void AThiefGameMode::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("NO SPAWN BOX"));
 	}
 
+	MainHUD = CreateWidget<UMainHUD>(GetWorld(), MainHUDClass);
+	MainHUD->AddToViewport(2);
+
 	StartGame();
 }
 
@@ -38,7 +43,7 @@ void AThiefGameMode::Tick(float DeltaSeconds)
 	UE_LOG(LogTemp, Warning, TEXT("Tick"));
 
 #if WITH_EDITOR
-	if (GEngine)
+	if (!GEngine)
 	{
 		for (FItemData& Item : Items)
 		{
@@ -122,7 +127,11 @@ void AThiefGameMode::SetItems()
 	for (int i = 0; i <= maxItem; i++)
 	{
 		const FVector SpawnLocation = GetRandomLocation();
-		const FTransform SpawnTransform(FRotator::ZeroRotator, SpawnLocation);
+		const FTransform SpawnTransform(FRotator(
+		FMath::FRandRange(0.f, 360.f),
+		FMath::FRandRange(0.f, 360.f),
+		FMath::FRandRange(0.f, 360.f)
+), SpawnLocation);
 
 		int32 RandomIndex = FMath::RandRange(0, ItemRowCodes.Num() - 1);
 		FName ItemCode = ItemRowCodes[RandomIndex];
