@@ -3,6 +3,54 @@
 
 #include "System/ThiefGameMode.h"
 
+#include "Item/Pickup.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "System/SpawnVolume.h"
+
+AThiefGameMode::AThiefGameMode()
+{
+	PrimaryActorTick.bCanEverTick = true;
+}
+
+void AThiefGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	SpawnBox = Cast<ASpawnVolume>(UGameplayStatics::GetActorOfClass(GetWorld(), ASpawnVolume::StaticClass()));
+
+
+	if (SpawnBox)
+	{
+		SetItems();
+	} else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NO SPAWN BOX"));
+	}
+}
+
+void AThiefGameMode::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	UE_LOG(LogTemp, Warning, TEXT("Tick"));
+
+#if WITH_EDITOR
+	if (GEngine)
+	{
+		for (FItemData& Item : Items)
+		{
+			FString IsPending = "NULL";
+			FString ItemName = Item.TextData.Name.ToString();
+			
+			FString Message = FString::Printf(TEXT("[ %s ]"), *ItemName);
+
+			UKismetSystemLibrary::PrintString(GetWorld(), Message, true, true, FLinearColor::Green, DeltaSeconds);
+		}
+	}
+#endif
+}
+
 float AThiefGameMode::AssessPlayer(ACharacter* Player)
 {
 	float score = 0;
@@ -10,4 +58,78 @@ float AThiefGameMode::AssessPlayer(ACharacter* Player)
 	
 	
 	return 0;
+}
+
+UItemBase* AThiefGameMode::CreateItemByID(FName ItemID, int32 Amount)
+{
+	//데이터 데이블에서 아이템 데이터 가져오기
+	if (!ItemTable)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ItemDataTable is null"));
+		return nullptr;
+	}
+
+	FItemData* ItemData = ItemTable->FindRow<FItemData>(ItemID, TEXT("CreateItemByID"));
+	
+	if (!ItemData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ItemData is null"));
+		return nullptr;
+	}
+	
+	//아이템 데이터 생성
+	UItemBase* NewItem = NewObject<UItemBase>(StaticClass());
+
+	//데이터 테이블에서 아이템 데이터 삽입
+	NewItem->ID = ItemData->ID;
+	NewItem->NumericData = ItemData->NumericData;
+	NewItem->TextData = ItemData->TextData;
+	NewItem->AssetData = ItemData->AssetData;
+	NewItem->SetAmount(Amount);
+
+	//아이템 데이터 반환
+	return NewItem;
+}
+
+FVector AThiefGameMode::GetRandomLocation()
+{
+	FVector location = FVector::ZeroVector;
+
+	if (SpawnBox)
+	{
+		FVector Origin = SpawnBox->SpawnBox->GetComponentLocation();
+		FVector Extent = SpawnBox->SpawnBox->GetScaledBoxExtent();
+		return UKismetMathLibrary::RandomPointInBoundingBox(Origin, Extent);
+	}
+	
+	return location;
+}
+
+void AThiefGameMode::SetItems()
+{
+	TArray<FName> ItemRowCodes = ItemTable->GetRowNames();
+	int32 maxItem = FMath::RandRange(ItemMin, ItemMax);
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.bNoFail = true;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	UE_LOG(LogTemp, Warning, TEXT("MAX ITEM : %d"), maxItem);
+	
+
+	for (int i = 0; i <= maxItem; i++)
+	{
+		const FVector SpawnLocation = GetRandomLocation();
+		const FTransform SpawnTransform(FRotator::ZeroRotator, SpawnLocation);
+
+		int32 RandomIndex = FMath::RandRange(0, ItemRowCodes.Num() - 1);
+		FName ItemCode = ItemRowCodes[RandomIndex];
+		UItemBase* NewItem = CreateItemByID(ItemCode, 1);
+
+		Items.Add(NewItem->GetItemData());
+		
+		APickup* Pickup = GetWorld()->SpawnActor<APickup>(APickup::StaticClass(), SpawnTransform, SpawnParams);
+		
+		Pickup->InitializeDrop(NewItem, 1);
+	}
 }

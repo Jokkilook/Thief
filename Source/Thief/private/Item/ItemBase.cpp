@@ -44,3 +44,14 @@ void UItemBase::ResetItemFlags()
 void UItemBase::Use_Implementation()
 {
 }
+
+FItemData UItemBase::GetItemData() const
+{
+    FItemData ItemData;
+    ItemData.ID = ID;
+    ItemData.TextData = TextData;
+    ItemData.NumericData = NumericData;
+    ItemData.AssetData = AssetData;
+
+    return ItemData;
+}

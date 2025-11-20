@@ -62,6 +62,10 @@ public:
 	void Use(AActor* user);
 	void Use_Implementation();
 
+	//아이템 데이터 구조체 반환
+	UFUNCTION(BLueprintCallable, Category = "Item")
+	FItemData GetItemData() const;
+
 protected:
 	bool operator==(const FName& OtherID) const
 	{
