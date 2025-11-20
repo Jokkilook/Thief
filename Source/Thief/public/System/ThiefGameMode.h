@@ -7,9 +7,9 @@
 #include "Item/ItemBase.h"
 #include "ThiefGameMode.generated.h"
 
-/**
- * 
- */
+
+DECLARE_MULTICAST_DELEGATE(FOnTimeDecrease);
+DECLARE_MULTICAST_DELEGATE(FGameOver);
 
 UCLASS()
 class THIEF_API AThiefGameMode : public AGameModeBase
@@ -20,10 +20,14 @@ public:
 
 	AThiefGameMode();
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class AThiefPlayer* PlayerRef;
+	FOnTimeDecrease OnTimeDecrease;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameOver OnGameOver;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	ACharacter* PlayerRef;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class ASpawnVolume* SpawnBox;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -35,13 +39,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 ItemMax = 100;
 
-	UPROPERTY(EditDefaultsOnly)
-	float MaxValue;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TArray<FItemData> Items;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TimerTime = 60.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TimeRate = 0.01;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	FTimerHandle GameTimerHandle;
+
 	
-	UFUNCTION(BlueprintCallable)
-	float AssessPlayer(AThiefPlayer* Player);
+	
+	UFUNCTION(Blueprintable)
+	float AssessPlayer(ACharacter* Player);
 
 	UFUNCTION()
 	UItemBase* CreateItemByID(FName ItemID, int32 Amount);
@@ -52,12 +65,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetItems();
 
-	UFUNCTION()
-	float SolveKnapsack(float WeightCapacity);
+	UFUNCTION(BlueprintCallable)
+	void StartGame();
+
+	UFUNCTION(BlueprintCallable)
+	void EndGame();
 
 protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
+
+	void DecreaseTimer();
 	
 };

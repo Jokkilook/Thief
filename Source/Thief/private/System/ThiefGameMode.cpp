@@ -32,6 +32,8 @@ void AThiefGameMode::BeginPlay()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("NO SPAWN BOX"));
 	}
+
+	StartGame();
 }
 
 void AThiefGameMode::Tick(float DeltaSeconds)
@@ -241,5 +243,33 @@ void AThiefGameMode::SetItems()
 		APickup* Pickup = GetWorld()->SpawnActor<APickup>(APickup::StaticClass(), SpawnTransform, SpawnParams);
 		
 		Pickup->InitializeDrop(NewItem, 1);
+	}
+}
+
+void AThiefGameMode::StartGame()
+{
+	GetWorld()->GetTimerManager().SetTimer(
+		GameTimerHandle,
+		this,
+		&AThiefGameMode::DecreaseTimer,
+		TimeRate,
+		true
+	);
+}
+
+void AThiefGameMode::EndGame()
+{
+	OnGameOver.Broadcast();	
+}
+
+void AThiefGameMode::DecreaseTimer()
+{
+	TimerTime -= TimeRate;
+	OnTimeDecrease.Broadcast();
+	
+	if (TimerTime <= 0.0f)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(GameTimerHandle);
+		EndGame();
 	}
 }
