@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/ThiefPlayer.h"
 #include "GameFramework/GameModeBase.h"
 #include "Item/ItemBase.h"
 #include "ThiefGameMode.generated.h"
 
-
-DECLARE_MULTICAST_DELEGATE(FOnTimeDecrease);
-DECLARE_MULTICAST_DELEGATE(FGameOver);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTimeDecrease);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTimeOut);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameOver);
 
 UCLASS()
 class THIEF_API AThiefGameMode : public AGameModeBase
@@ -19,13 +20,18 @@ class THIEF_API AThiefGameMode : public AGameModeBase
 public:
 
 	AThiefGameMode();
-	
+
+	UPROPERTY(BlueprintAssignable)
 	FOnTimeDecrease OnTimeDecrease;
 
-	FGameOver OnGameOver;
+	UPROPERTY(BlueprintAssignable)
+	FOnTimeOut OnTimeOut;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnGameOver OnGameOver;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	ACharacter* PlayerRef;
+	AThiefPlayer* PlayerRef;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class ASpawnVolume* SpawnBox;
@@ -57,6 +63,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<UMainHUD> MainHUDClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class ULevelSequence* PoliceSequence;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	ULevelSequence* RunSequence;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool IsTimeOut = false;
+
 	
 	
 	UFUNCTION(Blueprintable)
@@ -73,6 +88,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void StartGame();
+
+	UFUNCTION(BlueprintCallable)
+	void TimeOut();
+
+	UFUNCTION(BlueprintCallable)
+	void RunSuccess();
 
 	UFUNCTION(BlueprintCallable)
 	void EndGame();

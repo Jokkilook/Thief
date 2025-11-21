@@ -14,7 +14,7 @@ void UTimerWidget::NativeConstruct()
 
 	if (GameModeRef)
 	{
-		GameModeRef->OnTimeDecrease.AddUObject(this, &UTimerWidget::UpdateTimer);
+		GameModeRef->OnTimeDecrease.AddDynamic(this, &UTimerWidget::UpdateTimer);
 	}
 }
 
