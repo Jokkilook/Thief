@@ -154,8 +154,10 @@ int32 UInventoryComponent::RemoveAmountOfItem(UItemBase* Item, int32 DesiredRemo
 	Item->SetAmount(Item->Amount - ActualAmountToRemove);
 	//무게에서 삭제된 만큼 빼기
 	CurrentWeight -= ActualAmountToRemove * Item->GetItemSingleWeight();
+	if (CurrentWeight <= 0) CurrentWeight = 0;
 	//값어치에서 삭제된 만큼 빼기
 	CurrentValue -= ActualAmountToRemove * Item->GetItemValue();
+	if (CurrentValue <= 0) CurrentValue = 0;
 	//그 사실을 널리 알리기
 	OnInventoryUpdated.Broadcast();
 	//실제 삭제된 개수 반환

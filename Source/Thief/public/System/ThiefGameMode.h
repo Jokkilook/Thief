@@ -54,6 +54,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	FTimerHandle GameTimerHandle;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	class UMainHUD* MainHUD;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<UMainHUD> MainHUDClass;
+
 	UFUNCTION(BlueprintCallable)
 	float AssessPlayer(AThiefPlayer* Player);
 

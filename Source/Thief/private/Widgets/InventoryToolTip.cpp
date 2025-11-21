@@ -21,9 +21,17 @@ void UInventoryToolTip::NativeConstruct()
 		{
 			ItemName->SetText(Item->TextData.Name);
 
-			ItemValue->SetText(FText::AsNumber(Item->NumericData.Value));
+			FText ValueText = FText::Format(
+			FText::FromString(TEXT("{0} $")),
+			FText::AsNumber(Item->NumericData.Value));
+	
+			ItemValue->SetText(ValueText);
+
+			FText WeightText = FText::Format(
+			FText::FromString(TEXT("{0}kg")),
+			FText::AsNumber(Item->NumericData.Weight));
 			
-			ItemWeight->SetText(FText::AsNumber(Item->NumericData.Weight));
+			ItemWeight->SetText(WeightText);
 		}
 	} 
 	else
