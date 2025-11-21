@@ -3,7 +3,10 @@
 
 #include "Component/InventoryComponent.h"
 
+#if WITH_EDITOR
 #include "Editor/PropertyEditor/Public/PropertyEditorModule.h"
+#endif
+
 #include "Item/ItemBase.h"
 #include "Kismet/KismetSystemLibrary.h"
 
