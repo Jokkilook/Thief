@@ -7,7 +7,7 @@
 ASpawnVolume::ASpawnVolume()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>(FName("SpawnBox"));
 
@@ -19,11 +19,3 @@ void ASpawnVolume::BeginPlay()
 	Super::BeginPlay();
 	
 }
-
-// Called every frame
-void ASpawnVolume::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-

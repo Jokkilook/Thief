@@ -18,7 +18,7 @@
 
 AThiefGameMode::AThiefGameMode()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AThiefGameMode::BeginPlay()
@@ -42,7 +42,7 @@ void AThiefGameMode::BeginPlay()
 	}
 
 	MainHUD = CreateWidget<UMainHUD>(GetWorld(), MainHUDClass);
-	MainHUD->AddToViewport(2);
+	MainHUD->AddToViewport(3);
 
 	OnTimeOut.AddDynamic(this, &AThiefGameMode::OnTimeOutEvent);
 
