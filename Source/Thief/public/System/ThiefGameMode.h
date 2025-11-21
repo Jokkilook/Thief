@@ -45,6 +45,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 ItemMax = 100;
 
+	UPROPERTY(EditDefaultsOnly)
+	float MaxValue;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TArray<FItemData> Items;
 
@@ -63,6 +66,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<UMainHUD> MainHUDClass;
 
+	UFUNCTION(BlueprintCallable)
+	float AssessPlayer(AThiefPlayer* Player);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	class ULevelSequence* PoliceSequence;
 
@@ -72,16 +78,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool IsTimeOut = false;
 
-	
-	
-	UFUNCTION(Blueprintable)
-	float AssessPlayer(ACharacter* Player);
-
 	UFUNCTION()
 	UItemBase* CreateItemByID(FName ItemID, int32 Amount);
 
 	UFUNCTION(BlueprintCallable)
 	FVector GetRandomLocation();
+
+	UFUNCTION()
+	float SolveKnapsack(float WeightCapacity);
 
 	UFUNCTION(BlueprintCallable)
 	void SetItems();
