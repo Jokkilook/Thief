@@ -177,6 +177,19 @@ void UInventoryComponent::SplitExistingStack(UItemBase* Item, const int32 Amount
 	}
 }
 
+int32 UInventoryComponent::GetItemAmount()
+{
+	int32 Amount = 0;
+	for (const FItemSlot& Slot : InventoryContents)
+	{
+		if (Slot.Item)
+		{
+			Amount += Slot.Item->Amount;
+		}
+	}
+	return Amount;
+}
+
 //아이템 추가 태스크 함수
 FItemAddResult UInventoryComponent::HandleAddItem(UItemBase* AddedItem)
 {

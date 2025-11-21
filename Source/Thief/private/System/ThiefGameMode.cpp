@@ -14,6 +14,7 @@
 #include "Character/ThiefPlayer.h"
 #include "Component/InventoryComponent.h"
 #include "Widgets/PlayerHUD.h"
+#include "Widgets/GameResult.h"
 
 AThiefGameMode::AThiefGameMode()
 {
@@ -148,6 +149,7 @@ float AThiefGameMode::AssessPlayer(AThiefPlayer* Player)
     }
 
 	// 결과 출력
+	/*
 	UKismetSystemLibrary::PrintString(GetWorld(), TEXT("========== PLAYER ASSESSMENT =========="), true, true, FLinearColor::Yellow, 5.0f);
 
 	FString ItemsInMap = FString::Printf(TEXT("Total Items in Map: %d"), Items.Num());
@@ -172,6 +174,7 @@ float AThiefGameMode::AssessPlayer(AThiefPlayer* Player)
 	UKismetSystemLibrary::PrintString(GetWorld(), ScoreMsg, true, true, FLinearColor::Blue, 5.0f);
 
 	UKismetSystemLibrary::PrintString(GetWorld(), TEXT("======================================"), true, true, FLinearColor::Yellow, 5.0f);
+	*/
 
     return Score;
 }
@@ -233,14 +236,14 @@ void AThiefGameMode::SetItems()
 	UE_LOG(LogTemp, Warning, TEXT("MAX ITEM : %d"), maxItem);
 	
 
-	for (int i = 0; i <= maxItem; i++)
+	for (int i = 0; i < maxItem; i++)
 	{
 		const FVector SpawnLocation = GetRandomLocation();
 		const FTransform SpawnTransform(FRotator(
 		FMath::FRandRange(0.f, 360.f),
 		FMath::FRandRange(0.f, 360.f),
-		FMath::FRandRange(0.f, 360.f)
-), SpawnLocation);
+		FMath::FRandRange(0.f, 360.f)),
+		SpawnLocation);
 
 		int32 RandomIndex = FMath::RandRange(0, ItemRowCodes.Num() - 1);
 		FName ItemCode = ItemRowCodes[RandomIndex];
@@ -257,6 +260,11 @@ void AThiefGameMode::SetItems()
 void AThiefGameMode::StartGame()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Game Started"));
+	FInputModeGameOnly GameOnly;
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	PC->SetInputMode(GameOnly);
+	PC->bShowMouseCursor = false;
+	
 	GetWorld()->GetTimerManager().SetTimer(
 		GameTimerHandle,
 		this,
@@ -269,6 +277,7 @@ void AThiefGameMode::StartGame()
 void AThiefGameMode::TimeOut()
 {
 	OnTimeOut.Broadcast();
+	IsTimeOut = true;
 	
 	if (PoliceSequence)
 	{
@@ -289,7 +298,7 @@ void AThiefGameMode::RunSuccess()
 	{
 		FMovieSceneSequencePlaybackSettings Settings;
 		Settings.FinishCompletionStateOverride = EMovieSceneCompletionModeOverride::ForceKeepState;
-
+		
 		ALevelSequenceActor* OutActor;
 		ULevelSequencePlayer* Player = ULevelSequencePlayer::CreateLevelSequencePlayer(
 			GetWorld(), RunSequence, Settings, OutActor);
@@ -301,6 +310,7 @@ void AThiefGameMode::RunSuccess()
 void AThiefGameMode::EndGame()
 {
 	OnGameOver.Broadcast();
+	UE_LOG(LogTemp, Warning, TEXT("END GAME SEQUENCE"));
 
 	if (MainHUD)
 	{
@@ -310,7 +320,11 @@ void AThiefGameMode::EndGame()
 	{
 		PlayerRef->HUD->RemoveFromParent();
 	}
+	UE_LOG(LogTemp, Warning, TEXT("UI REMOVED"));
 
+
+	//PlayerRef->DisableInput(UGameplayStatics::GetPlayerController(this, 0));
+	
 	//탈출 성공
 	if (!IsTimeOut)
 	{
@@ -322,6 +336,29 @@ void AThiefGameMode::EndGame()
 	{
 		
 	}
+	UE_LOG(LogTemp, Warning, TEXT("TIME OUT CHECK"));
+
+
+	GameResult = CreateWidget<UGameResult>(GetWorld(), GameResultClass);
+	GameResult->AddToViewport(4);
+}
+
+FVaultInfo AThiefGameMode::GetResultInfo()
+{
+	FVaultInfo VaultInfo;
+
+	for (FItemData Item : Items)
+	{
+		VaultInfo.TotalAmount += 1;
+		VaultInfo.TotalValue += Item.NumericData.Value;
+		VaultInfo.TotalWeight += Item.NumericData.Weight;
+	}
+
+	VaultInfo.Score = AssessPlayer(PlayerRef);
+	VaultInfo.EfficientValue = SolveKnapsack(PlayerRef->InventoryComponent->GetWeightCapacity());
+	VaultInfo.IsTimeOut = IsTimeOut;
+		
+	return VaultInfo;
 }
 
 void AThiefGameMode::DecreaseTimer()

@@ -169,7 +169,7 @@ public:
 	FORCEINLINE float GetWeightPercent() const { return CurrentWeight/WeightCapacity; };
 	//인벤토리 아이템 개수 반환
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	FORCEINLINE int32 GetItemAmount() const { return InventoryContents.Num(); };
+	FORCEINLINE int32 GetItemAmount();
 	//인벤토리 슬롯 반환
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FORCEINLINE TArray<FItemSlot> GetInventory() const { return InventoryContents; };

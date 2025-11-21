@@ -12,6 +12,25 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTimeDecrease);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTimeOut);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameOver);
 
+USTRUCT(BlueprintType)
+struct FVaultInfo
+{
+	GENERATED_USTRUCT_BODY();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 TotalAmount = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TotalValue = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TotalWeight = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float EfficientValue = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Score = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsTimeOut = false;
+};
+
 UCLASS()
 class THIEF_API AThiefGameMode : public AGameModeBase
 {
@@ -66,6 +85,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<UMainHUD> MainHUDClass;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	class UGameResult* GameResult;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<UGameResult> GameResultClass;
+
 	UFUNCTION(BlueprintCallable)
 	float AssessPlayer(AThiefPlayer* Player);
 
@@ -101,6 +126,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void EndGame();
+
+	UFUNCTION(BlueprintCallable)
+	FVaultInfo GetResultInfo();
 
 protected:
 	virtual void BeginPlay() override;
