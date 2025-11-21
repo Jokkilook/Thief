@@ -3,6 +3,8 @@
 
 #include "System/ThiefGameMode.h"
 
+#include "LevelSequencePlayer.h"
+#include "MovieSceneSequencePlaybackSettings.h"
 #include "Blueprint/UserWidget.h"
 #include "Item/Pickup.h"
 #include "Kismet/GameplayStatics.h"
@@ -11,6 +13,7 @@
 #include "System/SpawnVolume.h"
 #include "Character/ThiefPlayer.h"
 #include "Component/InventoryComponent.h"
+#include "Widgets/PlayerHUD.h"
 
 AThiefGameMode::AThiefGameMode()
 {
@@ -23,10 +26,8 @@ void AThiefGameMode::BeginPlay()
 	
 	SpawnBox = Cast<ASpawnVolume>(UGameplayStatics::GetActorOfClass(GetWorld(), ASpawnVolume::StaticClass()));
 
-	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-
-	PlayerRef = Cast<AThiefPlayer>(PlayerCharacter);
-
+	PlayerRef = Cast<AThiefPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	
 	if (SpawnBox)
 	{
 		SetItems();
@@ -44,8 +45,6 @@ void AThiefGameMode::BeginPlay()
 void AThiefGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	UE_LOG(LogTemp, Warning, TEXT("Tick"));
 
 #if WITH_EDITOR
 	if (!GEngine)
@@ -257,6 +256,7 @@ void AThiefGameMode::SetItems()
 
 void AThiefGameMode::StartGame()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Game Started"));
 	GetWorld()->GetTimerManager().SetTimer(
 		GameTimerHandle,
 		this,
@@ -266,9 +266,62 @@ void AThiefGameMode::StartGame()
 	);
 }
 
+void AThiefGameMode::TimeOut()
+{
+	OnTimeOut.Broadcast();
+	
+	if (PoliceSequence)
+	{
+		FMovieSceneSequencePlaybackSettings Settings;
+		Settings.FinishCompletionStateOverride = EMovieSceneCompletionModeOverride::ForceKeepState;
+
+		ALevelSequenceActor* OutActor;
+		ULevelSequencePlayer* Player = ULevelSequencePlayer::CreateLevelSequencePlayer(
+			GetWorld(), PoliceSequence, Settings, OutActor);
+	
+		Player->Play();
+	}
+}
+
+void AThiefGameMode::RunSuccess()
+{
+	if (RunSequence)
+	{
+		FMovieSceneSequencePlaybackSettings Settings;
+		Settings.FinishCompletionStateOverride = EMovieSceneCompletionModeOverride::ForceKeepState;
+
+		ALevelSequenceActor* OutActor;
+		ULevelSequencePlayer* Player = ULevelSequencePlayer::CreateLevelSequencePlayer(
+			GetWorld(), RunSequence, Settings, OutActor);
+	
+		Player->Play();
+	}
+}
+
 void AThiefGameMode::EndGame()
 {
-	OnGameOver.Broadcast();	
+	OnGameOver.Broadcast();
+
+	if (MainHUD)
+	{
+		MainHUD->RemoveFromParent();
+	}
+	if (PlayerRef && PlayerRef->HUD)
+	{
+		PlayerRef->HUD->RemoveFromParent();
+	}
+
+	//탈출 성공
+	if (!IsTimeOut)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(GameTimerHandle);
+		RunSuccess();
+	}
+	//탈출 불가
+	else
+	{
+		
+	}
 }
 
 void AThiefGameMode::DecreaseTimer()
@@ -279,6 +332,6 @@ void AThiefGameMode::DecreaseTimer()
 	if (TimerTime <= 0.0f)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(GameTimerHandle);
-		EndGame();
+		TimeOut();
 	}
 }

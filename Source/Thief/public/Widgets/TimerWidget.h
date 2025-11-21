@@ -26,6 +26,7 @@ protected:
 
 	virtual void NativeConstruct() override;
 
+	UFUNCTION()
 	void UpdateTimer();
 
 	FText TimerFormat(float Time);
