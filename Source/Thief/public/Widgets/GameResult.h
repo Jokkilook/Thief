@@ -59,6 +59,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameResult")
 	FVaultInfo Result;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameResult")
+	TSoftObjectPtr<UWorld> MenuLevel;
 
 protected:
 

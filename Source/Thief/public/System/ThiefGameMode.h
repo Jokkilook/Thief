@@ -8,6 +8,7 @@
 #include "Item/ItemBase.h"
 #include "ThiefGameMode.generated.h"
 
+class APickup;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTimeDecrease);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTimeOut);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameOver);
@@ -29,6 +30,17 @@ struct FVaultInfo
 	float Score = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsTimeOut = false;
+};
+
+USTRUCT(BlueprintType)
+struct FCandidateInfo
+{
+	GENERATED_USTRUCT_BODY();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FItemData Data;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Efficiency;
 };
 
 UCLASS()
@@ -103,6 +115,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool IsTimeOut = false;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<APickup> PickUpClass;
+
 	UFUNCTION()
 	UItemBase* CreateItemByID(FName ItemID, int32 Amount);
 
@@ -127,8 +142,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndGame();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnTimeOutEvent();
+
 	UFUNCTION(BlueprintCallable)
 	FVaultInfo GetResultInfo();
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FItemData> GetCandidateItems();
 
 protected:
 	virtual void BeginPlay() override;

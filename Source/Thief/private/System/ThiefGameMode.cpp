@@ -24,8 +24,12 @@ AThiefGameMode::AThiefGameMode()
 void AThiefGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	SpawnBox = Cast<ASpawnVolume>(UGameplayStatics::GetActorOfClass(GetWorld(), ASpawnVolume::StaticClass()));
+
+	TArray<AActor*> SpawnBoxList;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnVolume::StaticClass(), SpawnBoxList);
+
+	SpawnBox = Cast<ASpawnVolume>(SpawnBoxList[FMath::RandRange(0,SpawnBoxList.Num()-1)]);
+	//SpawnBox = Cast<ASpawnVolume>(UGameplayStatics::GetActorOfClass(GetWorld(), ASpawnVolume::StaticClass()));
 
 	PlayerRef = Cast<AThiefPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	
@@ -39,6 +43,8 @@ void AThiefGameMode::BeginPlay()
 
 	MainHUD = CreateWidget<UMainHUD>(GetWorld(), MainHUDClass);
 	MainHUD->AddToViewport(2);
+
+	OnTimeOut.AddDynamic(this, &AThiefGameMode::OnTimeOutEvent);
 
 	StartGame();
 }
@@ -236,7 +242,7 @@ void AThiefGameMode::SetItems()
 	UE_LOG(LogTemp, Warning, TEXT("MAX ITEM : %d"), maxItem);
 	
 
-	for (int i = 0; i < maxItem; i++)
+	for (const FItemData& Item : GetCandidateItems())
 	{
 		const FVector SpawnLocation = GetRandomLocation();
 		const FTransform SpawnTransform(FRotator(
@@ -245,15 +251,13 @@ void AThiefGameMode::SetItems()
 		FMath::FRandRange(0.f, 360.f)),
 		SpawnLocation);
 
-		int32 RandomIndex = FMath::RandRange(0, ItemRowCodes.Num() - 1);
-		FName ItemCode = ItemRowCodes[RandomIndex];
-		UItemBase* NewItem = CreateItemByID(ItemCode, 1);
+		UItemBase* NewItem = CreateItemByID(Item.ID, 1);
 
 		Items.Add(NewItem->GetItemData());
 		
-		APickup* Pickup = GetWorld()->SpawnActor<APickup>(APickup::StaticClass(), SpawnTransform, SpawnParams);
+		APickup* Pickup = GetWorld()->SpawnActor<APickup>(PickUpClass, SpawnTransform, SpawnParams);
 		
-		Pickup->InitializeDrop(NewItem, 1);
+		Pickup->InitializeDrop(NewItem, 1, false);
 	}
 }
 
@@ -359,6 +363,95 @@ FVaultInfo AThiefGameMode::GetResultInfo()
 	VaultInfo.IsTimeOut = IsTimeOut;
 		
 	return VaultInfo;
+}
+
+TArray<FItemData> AThiefGameMode::GetCandidateItems()
+{
+	TArray<FItemData> Result;
+
+    // 1. 아이템 테이블에서 모든 행 가져오기
+    TArray<FName> RowNames = ItemTable->GetRowNames();
+
+    TArray<FCandidateInfo> High, Mid, Low;
+
+    for (auto& RowName : RowNames)
+    {
+        FItemData* Row = ItemTable->FindRow<FItemData>(RowName, TEXT(""));
+        if (Row == nullptr) continue;
+
+        FCandidateInfo Info;
+        Info.Data = *Row;
+        Info.Efficiency = (Row->NumericData.Weight > 0) ? Row->NumericData.Value / Row->NumericData.Weight : 0.f;
+
+        if (Info.Efficiency >= 2.0f) High.Add(Info);
+        else if (Info.Efficiency >= 1.0f) Mid.Add(Info);
+        else Low.Add(Info);
+    }
+
+    // 2. 목표 개수
+    int32 TotalCount = FMath::RandRange(ItemMin, ItemMax);
+
+	int32 HighCount = TotalCount * 0.2f;
+	int32 MidCount  = TotalCount * 0.5f;
+	int32 LowCount  = TotalCount - (HighCount + MidCount);
+
+    float SumWeight = 0.f;
+    float SumValue = 0.f;
+
+    auto AddRandom = [&](TArray<FCandidateInfo>& Src, int32 Count)
+    {
+        if (Src.Num() == 0) return;
+
+        for (int i = 0; i < Count; i++)
+        {
+            const FCandidateInfo& Info = Src[FMath::RandRange(0, Src.Num() - 1)];
+            Result.Add(Info.Data);
+
+            SumWeight += Info.Data.NumericData.Weight;
+            SumValue += Info.Data.NumericData.Value;
+        }
+    };
+
+    AddRandom(High, HighCount);
+    AddRandom(Mid,  MidCount);
+    AddRandom(Low,  LowCount);
+
+    // 3. 목표 총 무게 설정 (플레이어 최대 무게 기준으로)
+    float PlayerMaxWeight = PlayerRef->InventoryComponent->GetWeightCapacity();
+    float TargetWeight = PlayerMaxWeight * 2.0f;
+
+    // 4. 무게가 너무 적으면 → 고효율 아이템 추가
+    while (SumWeight < TargetWeight * 0.9f && High.Num() > 0)
+    {
+        const FCandidateInfo& Info = High[FMath::RandRange(0, High.Num() - 1)];
+        Result.Add(Info.Data);
+        SumWeight += Info.Data.NumericData.Weight;
+        SumValue += Info.Data.NumericData.Value;
+    }
+
+    // 5. 무게가 너무 많으면 → 저효율 아이템 제거
+    while (SumWeight > TargetWeight * 1.1f)
+    {
+        bool bRemoved = false;
+
+        for (int i = Result.Num() - 1; i >= 0; --i)
+        {
+            float Efficiency = Result[i].NumericData.Value / Result[i].NumericData.Weight;
+            if (Efficiency < 1.0f) // 저효율
+            {
+                SumWeight -= Result[i].NumericData.Weight;
+                SumValue  -= Result[i].NumericData.Value;
+                Result.RemoveAt(i);
+                bRemoved = true;
+                break;
+            }
+        }
+
+        if (!bRemoved)
+            break;
+    }
+
+    return Result;
 }
 
 void AThiefGameMode::DecreaseTimer()

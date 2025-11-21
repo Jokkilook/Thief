@@ -81,12 +81,13 @@ void AThiefPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	{
 		// 이동
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThiefPlayer::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AThiefPlayer::StopFootStep); 
 		
 		// 시야
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThiefPlayer::Look);
 
 		//달리기
-		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AThiefPlayer::Run);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &AThiefPlayer::Run);
 		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AThiefPlayer::StopRun);
 		
 		//인터랙션
@@ -237,6 +238,7 @@ void AThiefPlayer::Move(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
+		StartFootStep();
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
@@ -245,11 +247,38 @@ void AThiefPlayer::Move(const FInputActionValue& Value)
 void AThiefPlayer::Run()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+	if (GetWorldTimerManager().IsTimerActive(FootStepHandle))
+	{
+		GetWorldTimerManager().ClearTimer(FootStepHandle);
+
+		GetWorldTimerManager().SetTimer(FootStepHandle,
+			this,
+			&AThiefPlayer::PlayFootStep,
+			FootStepRate/1.5f,
+			true);
+	}
 }
 
 void AThiefPlayer::StopRun()
 {
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+
+	if (GetVelocity().Size() <= 0)
+	{
+		GetWorldTimerManager().ClearTimer(FootStepHandle);
+	} else
+	{
+		if (GetWorldTimerManager().IsTimerActive(FootStepHandle))
+		{
+			GetWorldTimerManager().ClearTimer(FootStepHandle);
+
+			GetWorldTimerManager().SetTimer(FootStepHandle,
+				this,
+				&AThiefPlayer::PlayFootStep,
+				FootStepRate,
+				true);
+		}
+	}
 }
 
 void AThiefPlayer::ToggleInventory()
@@ -282,6 +311,33 @@ void AThiefPlayer::ToggleInventory()
 			PC->SetInputMode(UIOnly);
 		}
 	}
+}
+
+void AThiefPlayer::StartFootStep()
+{
+	if (!GetWorldTimerManager().IsTimerActive(FootStepHandle))
+	{
+		GetWorldTimerManager().SetTimer(
+		FootStepHandle,
+		this,
+		&AThiefPlayer::PlayFootStep,
+		FootStepRate,
+		true
+		);
+	}
+}
+
+void AThiefPlayer::PlayFootStep()
+{
+	if (FootStepSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), FootStepSound, GetActorLocation());
+	}
+}
+
+void AThiefPlayer::StopFootStep()
+{
+	GetWorldTimerManager().ClearTimer(FootStepHandle);
 }
 
 void AThiefPlayer::BeginInteract()
@@ -375,7 +431,7 @@ void AThiefPlayer::DropItem(class UItemBase* ItemToDrop, const int32 AmountToDro
 		
 		const int32 RemovedAmount = InventoryComponent->RemoveAmountOfItem(ItemToDrop, AmountToDrop);
 		
-		APickup* Pickup = GetWorld()->SpawnActor<APickup>(APickup::StaticClass(), SpawnTransform, SpawnParams);
+		APickup* Pickup = GetWorld()->SpawnActor<APickup>(PickUpClass, SpawnTransform, SpawnParams);
 		
 		Pickup->InitializeDrop(ItemToDrop, RemovedAmount);
 	} else

@@ -76,6 +76,9 @@ public:
 	//꾹 누르기 인터랙션 시간
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
 	float InteractionDuration = 0.0f;
+	//픽업 아이템 클래스
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
+	TSubclassOf<class APickup> PickUpClass;
 
 	//위젯============================================================================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Widget")
@@ -86,6 +89,14 @@ public:
 	TSubclassOf<class UInventory> InventoryClass;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Widget")
 	UInventory* Inventory;
+
+	//사운드===========================================================================
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
+	FTimerHandle FootStepHandle;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Sound")
+	USoundBase* FootStepSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sound")
+	float FootStepRate = 0.4f;
 
 protected:
 	// Called when the game starts or when spawned
@@ -135,6 +146,15 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ToggleInventory();
+
+	UFUNCTION(BlueprintCallable)
+	void StartFootStep();
+
+	UFUNCTION(BlueprintCallable)
+	void PlayFootStep();
+
+	UFUNCTION(BlueprintCallable)
+	void StopFootStep();
 
 	
 	UFUNCTION(BlueprintCallable)

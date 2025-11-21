@@ -17,6 +17,9 @@ public:
 	
 	APickup();
 
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* PickUpSound;
+
 	UPROPERTY(VisibleAnywhere, Category = "Item Data")
 	UStaticMeshComponent* PickupMesh;
 	//최대 스택 개수를 초과하면 최대 스택 개수로 초기화됨.
@@ -31,7 +34,7 @@ public:
 
 	void InitializePickUp(const TSubclassOf<UItemBase> BaseClass, const int32 InAmount);
 
-	void InitializeDrop(UItemBase* ItemToDrop, const int32 InAmount);
+	void InitializeDrop(UItemBase* ItemToDrop, const int32 InAmount, bool IsPlaySound = true);
 
 	FORCEINLINE UItemBase* GetItemData() { return ItemReference; };
 

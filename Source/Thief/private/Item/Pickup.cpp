@@ -7,6 +7,7 @@
 #include "Component/InventoryComponent.h"
 #include "Item/ItemBase.h"
 #include "Data/ItemDataStruct.h"
+#include "Kismet/GameplayStatics.h"
 #include "Widgets/PlayerHUD.h"
 
 APickup::APickup()
@@ -54,13 +55,18 @@ void APickup::InitializePickUp(const TSubclassOf<UItemBase> BaseClass, const int
     }
 }
 
-void APickup::InitializeDrop(UItemBase* ItemToDrop, const int32 InAmount)
+void APickup::InitializeDrop(UItemBase* ItemToDrop, const int32 InAmount, bool IsPlaySound)
 {
     ItemReference = ItemToDrop->CreateItemCopy();
     ItemReference->OwningInventory = nullptr;
     InteractableData.InteractionDuration = ItemReference->NumericData.InteractionDuration;
     InAmount <= 0 ? ItemReference->SetAmount(1) : ItemReference->SetAmount(InAmount);
     PickupMesh->SetStaticMesh(ItemReference->AssetData.Mesh);
+
+    if (IsPlaySound)
+    {
+        UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickUpSound, GetActorLocation());
+    }
 }
 
 void APickup::Interact(AActor* Interactor)
@@ -101,6 +107,14 @@ void APickup::PickUp(const AActor* Picker)
                         break;
                     //싹 다 먹었으면 삭제
                     case EItemAddedResult::AllItemAdded:
+                        if (PickUpSound)
+                        {
+                            UE_LOG(LogTemp, Warning, TEXT("Picked up sound"));
+                            UGameplayStatics::PlaySoundAtLocation(GetWorld(),PickUpSound, GetActorLocation());
+                        } else
+                        {
+                            UE_LOG(LogTemp, Warning, TEXT("Picked up sound not found"));
+                        }
                         //디버깅 결과 메시지
                         UE_LOG(LogTemp, Warning, TEXT("Got All Item"));
                         if (Destroy())

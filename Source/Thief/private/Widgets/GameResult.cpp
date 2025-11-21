@@ -46,12 +46,43 @@ void UGameResult::OnRestartButtonClicked()
 
 void UGameResult::OnMainButtonClicked()
 {
-	
+	UGameplayStatics::OpenLevel(this, FName("MenuLevel"), true);
 }
 
 void UGameResult::SetResultText()
 {
 	ScoreText->SetText(FText::AsNumber(Result.Score));
+
+	//스코어는 S A B C D
+	//S : 95 이상
+	//A : 90 이상
+	//B : 80 이상
+	//C : 70 이상
+	//D : 69이하
+	if (Result.Score <= 0)
+	{
+		ScoreImage->SetBrushFromTexture(Images[5]);
+	}
+	else if (Result.Score >= 95)
+	{
+		ScoreImage->SetBrushFromTexture(Images[0]);
+	}
+	else if (Result.Score >= 90)
+	{
+		ScoreImage->SetBrushFromTexture(Images[1]);
+	}
+	else if (Result.Score >= 80)
+	{
+		ScoreImage->SetBrushFromTexture(Images[20]);
+	}
+	else if (Result.Score >= 70)
+	{
+		ScoreImage->SetBrushFromTexture(Images[3]);
+	}
+	else
+	{
+		ScoreImage->SetBrushFromTexture(Images[4]);
+	}
 
 	const FText TotalAmount = FText::Format(
 	FText::FromString(TEXT("{0}")),
@@ -102,36 +133,10 @@ void UGameResult::SetResultText()
 
 		const FText StolenWeight = FText::FromString("0kg");
 		StolenWeightText->SetText(StolenWeight);
+		
+		ScoreText->SetText(FText::AsNumber(0));
+		ScoreImage->SetBrushFromTexture(Images[5]);		
 	}
 
-	//스코어는 S A B C D
-	//S : 95 이상
-	//A : 90 이상
-	//B : 80 이상
-	//C : 70 이상
-	//D : 69이하
-	if (Result.Score <= 0)
-	{
-		ScoreImage->SetBrushFromTexture(Images[5]);
-	}
-	else if (Result.Score >= 95)
-	{
-		ScoreImage->SetBrushFromTexture(Images[0]);
-	}
-	else if (Result.Score >= 90)
-	{
-		ScoreImage->SetBrushFromTexture(Images[1]);
-	}
-	else if (Result.Score >= 80)
-	{
-		ScoreImage->SetBrushFromTexture(Images[20]);
-	}
-	else if (Result.Score >= 70)
-	{
-		ScoreImage->SetBrushFromTexture(Images[3]);
-	}
-	else
-	{
-		ScoreImage->SetBrushFromTexture(Images[4]);
-	}
+	
 }
