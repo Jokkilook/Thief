@@ -40,8 +40,7 @@ void UGameResult::NativeConstruct()
 
 void UGameResult::OnRestartButtonClicked()
 {
-	const FName LevelName = FName(*GetWorld()->GetCurrentLevel()->GetName());
-	UGameplayStatics::OpenLevel(GetWorld(), LevelName, true);
+	UGameplayStatics::OpenLevel(this, FName("MainLevel"), true);
 }
 
 void UGameResult::OnMainButtonClicked()
