@@ -79,20 +79,27 @@ float AThiefGameMode::SolveKnapsack(float WeightCapacity)
         return 0.0f;
     }
 
+	// 무게가 소수라서 100배 곱한 상태로 만들기(인덱싱 해야함)
     const int32 Scale = 100;
-    int32 Capacity = FMath::RoundToInt(WeightCapacity * Scale); // 무게가 소수라서 100배 곱한 상태로 만들기(인덱싱 해야함)
+    int32 Capacity = FMath::RoundToInt(WeightCapacity * Scale); 
 
+	// 2차원 배열 생성 후 초기화
     TArray<TArray<float>> DP;
-    DP.SetNum(NumItems + 1); // 아이템 개수 + 1개만큼 행 만들기
+	// 아이템 개수 + 1개만큼 행 만들기
+    DP.SetNum(NumItems + 1);
+	
     for (int32 i = 0; i <= NumItems; i++)
     {
-        DP[i].SetNum(Capacity + 1); // 가방 무게 * 100 + 1개만큼 열 만들기
+    	// 가방 무게 * 100 + 1개만큼 열 만들기
+        DP[i].SetNum(Capacity + 1);
+    	//모든 칸 초기화
         for (int32 w = 0; w <= Capacity; w++)
         {
-            DP[i][w] = 0.0f; // 초기화함
+            DP[i][w] = 0.0f;
         }
     }
 
+	//DP 돌리기
     for (int32 i = 1; i <= NumItems; i++)
     {
         float ItemWeight = Items[i - 1].NumericData.Weight;
@@ -101,20 +108,26 @@ float AThiefGameMode::SolveKnapsack(float WeightCapacity)
 
         for (int32 w = 0; w <= Capacity; w++)
         {
+        	// 아이템 안넣으면 이전 값으로
             DP[i][w] = DP[i - 1][w];
 
+        	// 아이템을 넣을 수 있으면
             if (ScaledWeight <= w)
             {
+            	// 값어치 = 이전 값 + 아이템 값어치
                 float ValueWithItem = DP[i - 1][w - ScaledWeight] + ItemValue;
+            	// 아이템 넣은 값어치가 이전보다 크면
                 if (ValueWithItem > DP[i][w])
                 {
+                	// 더 큰 값으로 업데이트
                     DP[i][w] = ValueWithItem;
                 }
             }
         }
     }
 
-    return DP[NumItems][Capacity];  // 마지막 인덱스
+	//마지막 테이블 값 리턴
+    return DP[NumItems][Capacity];
 }
 
 float AThiefGameMode::AssessPlayer(AThiefPlayer* Player)

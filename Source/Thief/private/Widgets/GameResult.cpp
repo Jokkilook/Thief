@@ -72,7 +72,7 @@ void UGameResult::SetResultText()
 	}
 	else if (Result.Score >= 80)
 	{
-		ScoreImage->SetBrushFromTexture(Images[20]);
+		ScoreImage->SetBrushFromTexture(Images[2]);
 	}
 	else if (Result.Score >= 70)
 	{
